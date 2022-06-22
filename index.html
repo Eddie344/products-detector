@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <!-- Load TensorFlow.js. This is required to use MobileNet. -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1"></script>
+    <!-- Load the MobileNet model. -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"></script>
+  </head>
+  <body>
+    <video
+      autoplay
+      width="500"
+      height="500"
+      id="videoElement"
+      style="border: 2px solid gray"
+    ></video>
+    <ul id="predictions"></ul>
+
+    <script>
+      const img = document.getElementById('img');
+      const video = document.querySelector('#videoElement');
+
+      if (navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices
+          .getUserMedia({video: true})
+          .then((stream) => {
+            video.srcObject = stream;
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+
+      const classify = (model) => {
+        model.classify(video).then((predictions) => {
+          document.getElementById('predictions').innerHTML = '';
+          predictions.forEach((prediction) => {
+            const predictionElement = document.createElement('li');
+            predictionElement.innerHTML = `${
+              prediction.className
+            } - ${Math.round(prediction.probability * 100)}%`;
+            document.getElementById('predictions').append(predictionElement);
+          });
+        });
+      };
+
+      // Load the model.
+      mobilenet.load().then((model) => {
+        setInterval(() => {
+          classify(model);
+        }, 2000);
+      });
+    </script>
+  </body>
+</html>
